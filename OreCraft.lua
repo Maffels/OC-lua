@@ -141,6 +141,8 @@ end
 -- Item backbone
 --------------------------------------------------------------------------------
 local Item = {}
+local ItemList = {}
+
 Item.__index = Item
 
 setmetatable(Item, { 
@@ -153,12 +155,12 @@ setmetatable(Item, {
 
 function Item:new (name,amount,limit)
     local o = {}
-    local self = setmetatable(Item,o)
+    local self = setmetatable({},Item)
     self.name = name or "noname"
     self.amount = amount or 0
     self.limit = limit or 0
     self.changed = true -- used to check whether this should be redrawn
-    --table.insert(ItemList,self)
+    table.insert(ItemList,self)
     
     --UI:addItem(self.name)
 
@@ -191,7 +193,7 @@ end
 --Main Program
 --------------------------------------------------------------------------------
 
-local ItemList = {}
+
 
 sand = Item:new("Sand", 10, 16)
 cobble = Item:new("Cobblestone", 123, 256)
@@ -203,24 +205,14 @@ table.insert(ItemList, sand)
 table.insert(ItemList, cobble)
 table.insert(ItemList, obsidian)
 
-print(sand)
-print(cobble)
-print(obsidian)
 
 
 
 
 UI:init()
-for k,v in pairs(ItemList) do
-    print(ItemList[k])
-    for i,j in pairs(ItemList[k]) do
-        print(ItemList[k][j])
-    end
 
-    
-end
 
---UI:refresh()
+UI:refresh()
 p = term.read()
 
 UI:clear()
