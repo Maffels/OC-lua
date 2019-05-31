@@ -28,7 +28,7 @@ function UI:init()
     gpu.setBackground(0xC3C3C3)
     gpu.set(1,1,"            LVLCRAFT           ")
     
-    gpu.setBackground(0xFF0000)
+    gpu.setBackground(0xFF0000) -- render close button
     gpu.setForeground(0x00FF00)
     gpu.set(32,1,"X")
 
@@ -48,17 +48,18 @@ function UI:itemBar(item,sx)
         b2[i] = " "
     end
   
-    local amountstr = item.amount.."/"..item.limit
+    local amountstr = item:getAmount().."/"..item:getLimit()
+    local namestr = item:getName()
     
-    for i=1, string.len(item.name) do
-        b1[10-math.floor(string.len(item.name)/2)+i] = string.sub(item.name,i,i)
+    for i=1, string.len(namestr) do
+        b1[10-math.floor(string.len(namestr)/2)+i] = string.sub(namestr,i,i)
     end
   
     for i=1, string.len(amountstr) do
         b2[10-math.floor(string.len(amountstr)/2)+i] = string.sub(amountstr,i,i)
     end
     
-    local perc = item.amount/item.limit
+    local perc = item:getAmount()/item:getLimit()
     if perc >= 1 then
         gpu.setBackground(col.g)
     elseif perc < 1 and perc > 0.2 then
@@ -67,7 +68,7 @@ function UI:itemBar(item,sx)
         gpu.setBackground(col.r)
     end  
     perc = math.floor(perc*20)
-    if perc == 0 and item.amount ~= 0 then
+    if perc == 0 and item:getAmount() ~= 0 then
         perc = 1
     end
   
@@ -96,9 +97,9 @@ end
 
 function UI:refresh()
     for k,v in pairs(ItemList) do
-        if ItemList[k].changed then
+        if ItemList[k]:isChanged() then
             UI:itemBar(ItemList[k],k*3-1)
-            ItemList[k]:isDrawn()
+            --ItemList[k]:isDrawn()
         end
       end
 
@@ -109,16 +110,20 @@ end
 --------------------------------------------------------------------------------
 local button = {}
 
-function button:new(name, type, xPos,yPos,xSize,ySize)
-    setmetatable({},self)
-    self.__index = self
-    self.name = name or "noname"
-    self.type = type
-    self.xPos = xPos
-    self.yPos = yPos
-    self.xSize = xSize or 1
-    self.ySize = ySize or 1
+local ButtonList = {}
 
+
+function button:new(name, type, xPos,yPos,xSize,ySize)
+    local o = {
+        name = name or "noname",
+        type = type,
+        xPos = xPos,
+        yPos = yPos,
+        xSize = xSize or 1,
+        ySize = ySize or 1
+    }
+    setmetatable(o, {__index = button}
+    )
 end
 
 local btnClose = button:new("Close", 0, 32,1)
@@ -140,31 +145,28 @@ end
 
 -- Item backbone
 --------------------------------------------------------------------------------
+
 local Item = {}
-local ItemList = {}
+local Ingot = {}
+local Ore = {}
 
-Item.__index = Item
+function Item:new(name, type, amount,limit, item )
+    local o = {
+        name = name,
+        type = type or 1,
+        amount = amount,
+        limit = limit,
+        changed = true,
+        precursor = item or nil
 
-setmetatable(Item, { 
-    __call = function (cls, ...)
-    return cls.new(...)
-    end,
-})
-
-
-
-function Item:new (name,amount,limit)
-    local o = {}
-    local self = setmetatable({},Item)
-    self.name = name or "noname"
-    self.amount = amount or 0
-    self.limit = limit or 0
-    self.changed = true -- used to check whether this should be redrawn
-    table.insert(ItemList,self)
+    }
+    setmetatable(o, {__index = Item})
+    return o
     
-    --UI:addItem(self.name)
+end
 
-    return self
+function Item:getName()
+    return self.name
 end
 
 function Item:getAmount()
@@ -185,6 +187,10 @@ function Item:setLimit(limit)
     self.changed = true
 end
 
+function Item:isChanged()
+    return self.changed
+end
+
 function Item:isDrawn()
     self.changed = false
 end
@@ -193,23 +199,39 @@ end
 --Main Program
 --------------------------------------------------------------------------------
 
+ItemList = {}
+
+ironOre = Item:new("Iron Ore",0, 12)
+copperOre = Item:new("Copper Ore",0, 25)
+tinOre = Item:new("Tin Ore", 0, 151)
 
 
-sand = Item:new("Sand", 10, 16)
-cobble = Item:new("Cobblestone", 123, 256)
-obsidian = Item:new("Obsidian", 34,128)
+ironIngot = Item:new("Iron Ingot", 1, 10, 128, ironOre)
+copperIngot = Item:new("Copper Ingot", 1, 54, 128, copperOre)
+tinIngot = Item:new("Tin Ingot", 1, 26, 128, tinOre)
+
+
+--sand = Item:new("Sand", 10, 16)
+--cobble = Item:new("Cobblestone", 123, 256)
+--obsidian = Item:new("Obsidian", 34,128)
 
 
 
-table.insert(ItemList, sand)
-table.insert(ItemList, cobble)
-table.insert(ItemList, obsidian)
+--table.insert(ItemList, sand)
+--table.insert(ItemList, cobble)
+--table.insert(ItemList, obsidian)
 
+table.insert(ItemList, ironIngot)
+table.insert(ItemList, copperIngot)
+table.insert(ItemList, tinIngot)
 
 
 
 
 UI:init()
+
+
+
 
 
 UI:refresh()
