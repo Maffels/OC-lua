@@ -6,7 +6,8 @@ local sides = require("sides")
 local os = require("os")
 local event = require("event")
 local run = true
-
+local Item = require("itemClass")
+local Product = require("productClass")
 
 
 
@@ -96,12 +97,13 @@ function UI:clear()
 end
 
 function UI:refresh()
-    for k,v in pairs(ItemList) do
-        if ItemList[k]:isChanged() then
-            UI:itemBar(ItemList[k],k*3-1)
+    local productList = Product:getList()
+    for k,v in pairs(productList) do
+        if productList[k]:isChanged() then
+            UI:itemBar(productList[k],k*3-1)
             --ItemList[k]:isDrawn()
         end
-      end
+    end
 
 end
 --------------------------------------------------------------------------------
@@ -110,7 +112,7 @@ end
 --------------------------------------------------------------------------------
 local button = {}
 
-local ButtonList = {}
+ButtonList = {}
 
 
 function button:new(name, type, xPos,yPos,xSize,ySize)
@@ -122,119 +124,78 @@ function button:new(name, type, xPos,yPos,xSize,ySize)
         xSize = xSize or 1,
         ySize = ySize or 1
     }
-    setmetatable(o, {__index = button}
-    )
+    setmetatable(o, {__index = button})
+    table.insert(ButtonList,o)
+    return o
 end
 
+
 local btnClose = button:new("Close", 0, 32,1)
+
 -------------------------------------------------------------------------------
 
 -- Touchscreen Functions
 --------------------------------------------------------------------------------
-local touch = {}
+local Touch = {}
 
-function touch:handle(ename,eadr,ex,ey,ebtn,epname)
-    
-
+function Touch.handle(ename,eadr,ex,ey,ebtn,epname)
+    for k,v in pairs(ButtonList) do
+        if ex >= ButtonList[k].xPos and ex <= (ButtonList[k].xPos + ButtonList[k].xSize-1) then
+            if ey >= ButtonList[k].yPos and ey <= (ButtonList[k].yPos + ButtonList[k].ySize-1) then
+                if ButtonList[k].type == 0 then
+                    run = false
+                end
+                
+            end
+        end
+    end
 end
 
-function touch:init()
-    event.listen("touch", touch:handle())
+function Touch.init()
+    event.listen("touch", Touch.handle)
 end
+
+function Touch.stop()
+    event.ignore("touch", Touch.handle)
+end
+
 --------------------------------------------------------------------------------
 
 -- Item backbone
 --------------------------------------------------------------------------------
 
-local Item = {}
-local Ingot = {}
-local Ore = {}
 
-function Item:new(name, type, amount,limit, item )
-    local o = {
-        name = name,
-        type = type or 1,
-        amount = amount,
-        limit = limit,
-        changed = true,
-        precursor = item or nil
 
-    }
-    setmetatable(o, {__index = Item})
-    return o
-    
-end
 
-function Item:getName()
-    return self.name
-end
-
-function Item:getAmount()
-    return self.amount
-end
-
-function Item:getLimit()
-    return self.limit
-end
-
-function Item:setAmount(amount)
-    self.amount = amount
-    self.changed = true
-end
-
-function Item:setLimit(limit)
-    self.limit = limit
-    self.changed = true
-end
-
-function Item:isChanged()
-    return self.changed
-end
-
-function Item:isDrawn()
-    self.changed = false
-end
 --------------------------------------------------------------------------------
 
 --Main Program
 --------------------------------------------------------------------------------
 
-ItemList = {}
+--ItemList = {}
 
 ironOre = Item:new("Iron Ore",0, 12)
 copperOre = Item:new("Copper Ore",0, 25)
 tinOre = Item:new("Tin Ore", 0, 151)
 
 
-ironIngot = Item:new("Iron Ingot", 1, 10, 128, ironOre)
-copperIngot = Item:new("Copper Ingot", 1, 54, 128, copperOre)
-tinIngot = Item:new("Tin Ingot", 1, 26, 128, tinOre)
-
-
---sand = Item:new("Sand", 10, 16)
---cobble = Item:new("Cobblestone", 123, 256)
---obsidian = Item:new("Obsidian", 34,128)
-
-
-
---table.insert(ItemList, sand)
---table.insert(ItemList, cobble)
---table.insert(ItemList, obsidian)
-
-table.insert(ItemList, ironIngot)
-table.insert(ItemList, copperIngot)
-table.insert(ItemList, tinIngot)
+ironIngot = Product:new("Iron Ingot", 10, 128, ironOre)
+copperIngot = Product:new("Copper Ingot", 54, 128, copperOre)
+tinIngot = Product:new("Tin Ingot", 26, 128, tinOre)
 
 
 
 
 UI:init()
+Touch.init()
 
 
+while run do 
 
+    UI:refresh()
+    os.sleep(0.2)
 
+end
 
-UI:refresh()
-p = term.read()
-
+Touch.stop()
 UI:clear()
