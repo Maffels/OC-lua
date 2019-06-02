@@ -101,7 +101,7 @@ function UI:refresh()
     for k,v in pairs(productList) do
         if productList[k]:isChanged() then
             UI:itemBar(productList[k],k*3-1)
-            --ItemList[k]:isDrawn()
+            --productList[k]:isDrawn()
         end
     end
 
@@ -164,7 +164,7 @@ end
 -- Item backbone
 --------------------------------------------------------------------------------
 
-
+--Moved to own Class files
 
 
 --------------------------------------------------------------------------------
