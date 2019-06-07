@@ -1,6 +1,5 @@
 
 Item = {}
-local ItemList = {}
 
 function Item:getName()
     return self.name
@@ -23,10 +22,6 @@ function Item:isDrawn()
     self.changed = false
 end
 
-function Item:getList()
-    return ItemList
-end
-
 function Item:new(name, amount)
     local o = {
         name = name,
@@ -37,7 +32,7 @@ function Item:new(name, amount)
 
     }
     setmetatable(o, {__index = Item})
-    table.insert(ItemList, o)
+
     return o
     
 end

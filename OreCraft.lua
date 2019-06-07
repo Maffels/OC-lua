@@ -97,7 +97,7 @@ function UI:clear()
 end
 
 function UI:refresh()
-    local productList = Product:getList()
+
     for k,v in pairs(productList) do
         if productList[k]:isChanged() then
             UI:itemBar(productList[k],k*3-1)
@@ -171,19 +171,13 @@ end
 
 --Main Program
 --------------------------------------------------------------------------------
+itemList = {}
 
---ItemList = {}
+productList = {}
 
-ironOre = Item:new("Iron Ore",0, 12)
-copperOre = Item:new("Copper Ore",0, 25)
-tinOre = Item:new("Tin Ore", 0, 151)
-
-
-ironIngot = Product:new("Iron Ingot", 10, 128, ironOre)
-copperIngot = Product:new("Copper Ingot", 54, 128, copperOre)
-tinIngot = Product:new("Tin Ingot", 26, 128, tinOre)
-
-
+table.insert(productList, Product:new("Iron Ingot", 0, 256, "Iron Ore" ))
+table.insert(productList, Product:new("Copper Ingot", 0, 128, "Copper Ore"))
+table.insert(productList, Product:new("Tin Ingot", 0, 128, "Tin Ore"))
 
 
 UI:init()
