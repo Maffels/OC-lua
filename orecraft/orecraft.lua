@@ -6,8 +6,8 @@ local sides = require("sides")
 local os = require("os")
 local event = require("event")
 local run = true
-local Item = require("itemClass")
-local Product = require("productClass")
+local Item = require("itemclass")
+local Product = require("productclass")
 
 
 
